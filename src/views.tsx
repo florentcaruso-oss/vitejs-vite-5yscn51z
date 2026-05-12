@@ -624,7 +624,7 @@ setMsgs(newMsgs); setInput(''); setLoading(true); setStreamTxt('');
 if (abortRef.current) abortRef.current.abort();
 const ctrl = new AbortController(); abortRef.current = ctrl;
 try {
-const res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', signal:ctrl.signal, headers:{'Content-Type':'application/json'}, body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1024, stream:true, system:SYSTEM, messages:newMsgs.map(m=>({role:m.role,content:m.content})) }) });
+const res = await fetch('/api/chat', { method:'POST', signal:ctrl.signal, headers:{'Content-Type':'application/json'}, body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1024, stream:true, system:SYSTEM, messages:newMsgs.map(m=>({role:m.role,content:m.content})) }) });
 if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e?.error?.message||`HTTP ${res.status}`); }
 const reader = res.body!.getReader(); const dec = new TextDecoder(); let full = '';
 while (true) {
