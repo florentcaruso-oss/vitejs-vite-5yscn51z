@@ -617,30 +617,12 @@ useEffect(() => { endRef.current?.scrollIntoView({ behavior:'smooth' }); }, [msg
 
 const send = async (txt?: string) => {
 const q = (txt||input).trim();
-if (!q || loading) return;
-setError(null);
-const newMsgs = [...msgs, { role:'user', content:q }];
-setMsgs(newMsgs); setInput(''); setLoading(true); setStreamTxt('');
-if (abortRef.current) abortRef.current.abort();
-const ctrl = new AbortController(); abortRef.current = ctrl;
-try {
-const res = await fetch('/api/chat', { method:'POST', signal:ctrl.signal, headers:{'Content-Type':'application/json'}, body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1024, stream:true, system:SYSTEM, messages:newMsgs.map(m=>({role:m.role,content:m.content})) }) });
-if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e?.error?.message||`HTTP ${res.status}`); }
-const reader = res.body!.getReader(); const dec = new TextDecoder(); let full = '';
-while (true) {
-const { done, value } = await reader.read(); if (done) break;
-const chunk = dec.decode(value, { stream:true });
-for (const line of chunk.split('\n')) {
-if (!line.startsWith('data:')) continue;
-const data = line.slice(5).trim(); if (data==='[DONE]') continue;
-try { const p=JSON.parse(data); if (p.type==='content_block_delta'&&p.delta?.type==='text_delta') { full+=p.delta.text; setStreamTxt(full); } } catch {}
-}
-}
-setMsgs(m => [...m, { role:'assistant', content:full.trim()||'Erreur.' }]); setStreamTxt('');
-} catch(e: any) { if (e.name==='AbortError') return; setError(`Erreur : ${e.message}`); setStreamTxt(''); }
-setLoading(false);
+if (!q) return;
+setMsgs(m => [...m, {role:'user',content:q}, {role:'assistant',content:'🚀 Le Coach IA arrive bientôt ! En attendant, explore tes séances, stats et classement. 💪'}]);
+setInput('');
+return;
 };
-
+  
 return (
 <div style={{ background:D.bg, minHeight:'100vh', color:D.text, maxWidth:430, margin:'0 auto', display:'flex', flexDirection:'column' }}>
 <div style={{ padding:'48px 16px 11px', background:'rgba(5,5,7,.98)', borderBottom:'1px solid rgba(255,255,255,.04)' }}>
