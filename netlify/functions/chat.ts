@@ -1,30 +1,38 @@
-export default async (req: Request) => {
-if (req.method === 'OPTIONS') {
-return new Response('ok', {
+import type { Handler } from '@netlify/functions';
+
+const handler: Handler = async (event) => {
+if (event.httpMethod === 'OPTIONS') {
+return {
+statusCode: 200,
 headers: {
 'Access-Control-Allow-Origin': '*',
 'Access-Control-Allow-Methods': 'POST',
 'Access-Control-Allow-Headers': 'Content-Type',
+},
+body: '',
+};
 }
-});
-}
-const body = await req.json();
+
 const response = await fetch('https://api.anthropic.com/v1/messages', {
 method: 'POST',
 headers: {
 'Content-Type': 'application/json',
-'x-api-key': process.env.ANTHROPIC_API_KEY ?? '',
+'x-api-key': process.env.ANTHROPIC_API_KEY || '',
 'anthropic-version': '2023-06-01',
 },
-body: JSON.stringify(body),
+body: event.body || '',
 });
+
 const data = await response.json();
-return new Response(JSON.stringify(data), {
+
+return {
+statusCode: 200,
 headers: {
 'Content-Type': 'application/json',
 'Access-Control-Allow-Origin': '*',
-}
-});
+},
+body: JSON.stringify(data),
+};
 };
 
-export const config = { path: '/api/chat' };
+export { handler };
