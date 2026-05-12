@@ -78,7 +78,7 @@ setSummary({ dur: elapsed, series: seriesCount, exercices: Object.keys(sesSeries
 setLoadingAI(true);
 try {
 const rl = Object.entries(sesSeries).map(([id, series]: any) => { const ex = EX[id]; if (!ex) return null; const maxW = Math.max(...series.map((s: any) => s.weight||0)); return `${ex.name}: ${series.length} séries, max ${maxW}kg`; }).filter(Boolean).join(', ');
-const res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:250, messages:[{ role:'user', content:`Tu es SURGE Coach. Analyse en 2-3 phrases motivantes en français. ${profile.firstName}, objectif: ${profile.goal||'masse'}. ${Math.floor(elapsed/60)} min, ${seriesCount} séries, ${nouveauxRecords} records. Exercices: ${rl}. 1 conseil concret.` }] }) });
+const res = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:250, messages:[{ role:'user', content:`Tu es SURGE Coach. Analyse en 2-3 phrases motivantes en français. ${profile.firstName}, objectif: ${profile.goal||'masse'}. ${Math.floor(elapsed/60)} min, ${seriesCount} séries, ${nouveauxRecords} records. Exercices: ${rl}. 1 conseil concret.` }] }) });
 const data = await res.json();
 setAiText(data.content?.[0]?.text || '');
 } catch(e) {} finally { setLoadingAI(false); }
