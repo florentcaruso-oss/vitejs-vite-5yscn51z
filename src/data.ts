@@ -64,17 +64,24 @@ export const D = {
   {id:"teen",emoji:"🧒",label:"Moins de 18 ans",desc:"Programme sécurisé"},
   ];
   export const GOALS = [
-  {id:"mass",emoji:"💪",label:"Prise de masse",color:"#C8FF00",desc:"Gagner du muscle"},
-  {id:"cut",emoji:"🔥",label:"Sèche",color:"#FF4040",desc:"Perdre du gras"},
-  {id:"force",emoji:"⚡",label:"Force pure",color:"#FF8C00",desc:"Soulever plus lourd"},
-  {id:"fit",emoji:"🏃",label:"Remise en forme",color:"#3B9EFF",desc:"Retrouver la forme"},
-  ];
-  export const FEMALE_GOALS = [
-  {id:"glute",emoji:"🍑",label:"Fessiers & Cuisses",color:"#F472B6",desc:"Galbe et rondeur"},
-  {id:"tone",emoji:"✨",label:"Tonicité globale",color:"#A855F7",desc:"Corps ferme"},
-  {id:"cut",emoji:"🔥",label:"Perte de poids",color:"#FF4040",desc:"Affiner"},
-  {id:"fit",emoji:"🏃",label:"Remise en forme",color:"#3B9EFF",desc:"Santé"},
-  ];
+{id:"mass",emoji:"💪",label:"Prise de masse",color:"#C8FF00",desc:"Gagner du muscle et du volume"},
+{id:"cut",emoji:"🔥",label:"Sèche",color:"#FF4040",desc:"Perdre du gras, garder le muscle"},
+{id:"force",emoji:"⚡",label:"Force pure",color:"#FF8C00",desc:"Soulever plus lourd, devenir plus fort"},
+{id:"fit",emoji:"🏃",label:"Remise en forme",color:"#3B9EFF",desc:"Retrouver la forme et l'énergie"},
+];
+export const FEMALE_GOALS = [
+{id:"tone",emoji:"✨",label:"Tonicité globale",color:"#A855F7",desc:"Corps ferme et dessiné"},
+{id:"cut",emoji:"🔥",label:"Perte de poids",color:"#FF4040",desc:"Affiner et sculpter"},
+{id:"fit",emoji:"🏃",label:"Remise en forme",color:"#3B9EFF",desc:"Énergie et santé"},
+{id:"mass",emoji:"💪",label:"Prise de muscle",color:"#C8FF00",desc:"Développer progressivement"},
+];
+export const TEEN_GOALS = [
+{id:"fit",emoji:"🏃",label:"Remise en forme",color:"#14B8A6",desc:"Énergie et santé"},
+{id:"tone",emoji:"✨",label:"Tonicité",color:"#A855F7",desc:"Corps athlétique"},
+{id:"mass",emoji:"💪",label:"Prise de muscle",color:"#C8FF00",desc:"Développer progressivement"},
+];
+
+
   export const TEEN_GOALS = [
   {id:"fit",emoji:"🏃",label:"Remise en forme",color:"#14B8A6",desc:"Énergie"},
   {id:"tone",emoji:"✨",label:"Tonicité",color:"#A855F7",desc:"Corps athlétique"},
