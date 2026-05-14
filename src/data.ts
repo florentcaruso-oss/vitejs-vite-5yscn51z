@@ -81,12 +81,6 @@ export const TEEN_GOALS = [
 {id:"mass",emoji:"💪",label:"Prise de muscle",color:"#C8FF00",desc:"Développer progressivement"},
 ];
 
-
-  export const TEEN_GOALS = [
-  {id:"fit",emoji:"🏃",label:"Remise en forme",color:"#14B8A6",desc:"Énergie"},
-  {id:"tone",emoji:"✨",label:"Tonicité",color:"#A855F7",desc:"Corps athlétique"},
-  {id:"mass",emoji:"💪",label:"Prise de muscle",color:"#C8FF00",desc:"Progressif"},
-  ];
   export const LEVELS = [
   {id:"beginner",emoji:"🌱",label:"Débutant",desc:"Moins d'1 an"},
   {id:"intermediate",emoji:"⚡",label:"Intermédiaire",desc:"1 à 3 ans"},
