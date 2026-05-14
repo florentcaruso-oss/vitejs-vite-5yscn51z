@@ -1,6 +1,91 @@
 import { EX, RANGS, ROMS, ACHIEVEMENTS, WEEKLY } from './data';
 
-export function getAvail(equipment: string[], environment: string): string[] {
+// ─── CYCLES FIXES QUI TOURNENT ───────────────────────────
+const CYCLES: Record<string, any[]> = {
+mass: [
+{ name:'Pecs · Triceps', icon:'🏋️', muscleGroups:['chest','triceps'], isRest:false },
+{ name:'Dos · Biceps', icon:'🌊', muscleGroups:['back','biceps'], isRest:false },
+{ name:'Repos', icon:'😴', isRest:true, note:'Le muscle grandit pendant le repos.' },
+{ name:'Épaules', icon:'🔥', muscleGroups:['shoulders'], isRest:false },
+{ name:'Jambes', icon:'🦵', muscleGroups:['legs'], isRest:false },
+{ name:'Repos', icon:'😴', isRest:true, note:'Récupération complète.' },
+{ name:'Pecs · Triceps', icon:'🏋️', muscleGroups:['chest','triceps'], isRest:false },
+],
+cut: [
+{ name:'Pecs · Triceps', icon:'🏋️', muscleGroups:['chest','triceps'], isRest:false },
+{ name:'Dos · Biceps', icon:'🌊', muscleGroups:['back','biceps'], isRest:false },
+{ name:'Repos', icon:'😴', isRest:true, note:'Récupération.' },
+{ name:'Épaules · Abdos', icon:'🔥', muscleGroups:['shoulders','abs'], isRest:false },
+{ name:'Jambes', icon:'🦵', muscleGroups:['legs'], isRest:false },
+{ name:'Repos', icon:'😴', isRest:true, note:'Récupération complète.' },
+{ name:'Dos · Biceps', icon:'🌊', muscleGroups:['back','biceps'], isRest:false },
+],
+force: [
+{ name:'Squat · Jambes', icon:'🦵', muscleGroups:['legs'], isRest:false },
+{ name:'Développé · Pecs', icon:'🏋️', muscleGroups:['chest','triceps'], isRest:false },
+{ name:'Repos', icon:'😴', isRest:true, note:'Récupération neuromusculaire.' },
+{ name:'Soulevé · Dos', icon:'⚡', muscleGroups:['back','biceps'], isRest:false },
+{ name:'Militaire · Épaules', icon:'🔥', muscleGroups:['shoulders'], isRest:false },
+{ name:'Repos', icon:'😴', isRest:true, note:'Récupération complète.' },
+{ name:'Repos', icon:'😴', isRest:true, note:'Repos actif, mobilité.' },
+],
+fit: [
+{ name:'Full Body A', icon:'💪', muscleGroups:['chest','back','legs'], isRest:false },
+{ name:'Repos', icon:'😴', isRest:true, note:'Récupération.' },
+{ name:'Full Body B', icon:'⚡', muscleGroups:['shoulders','legs','abs'], isRest:false },
+{ name:'Repos', icon:'😴', isRest:true, note:'Récupération.' },
+{ name:'Full Body C', icon:'🔥', muscleGroups:['back','chest','arms'], isRest:false },
+{ name:'Repos', icon:'😴', isRest:true, note:'Récupération complète.' },
+{ name:'Repos', icon:'😴', isRest:true, note:'Repos total.' },
+],
+};
+
+// ─── EXERCICES FIXES PAR GROUPE ──────────────────────────
+const PROGRAMS: Record<string, Record<string, string[]>> = {
+mass: {
+chest: ['bench','incline','dbBench','flyes'],
+triceps: ['skullcrush','triceppush','diamondPushup'],
+back: ['deadlift','pullup','row','latpull'],
+biceps: ['curl','dbCurl','hammercurl'],
+shoulders: ['ohp','lateral','rearDelt','facePull','frontRaise'],
+legs: ['squat','rdl','legpress','lunge','calf'],
+abs: ['plank','crunch','legRaise','russianTwist'],
+},
+cut: {
+chest: ['pushup','dbBench','incline','flyes'],
+triceps: ['triceppush','diamondPushup','skullcrush'],
+back: ['pullup','row','latpull','australianRow'],
+biceps: ['dbCurl','hammercurl','curl'],
+shoulders: ['lateral','facePull','rearDelt','ohp'],
+abs: ['plank','crunch','legRaise','russianTwist','sidePlank'],
+legs: ['squat','lunge','rdl','bwSquat','calf'],
+},
+force: {
+legs: ['squat','rdl','legpress','calf'],
+chest: ['bench','incline','dip'],
+triceps: ['skullcrush','triceppush'],
+back: ['deadlift','row','pullup'],
+biceps: ['curl','hammercurl'],
+shoulders: ['ohp','lateral','rearDelt'],
+},
+fit: {
+chest: ['pushup','dbBench'],
+back: ['australianRow','latpull'],
+legs: ['bwSquat','lunge','gluteBridge'],
+shoulders: ['dbOhp','lateral'],
+abs: ['plank','crunch','legRaise'],
+arms: ['dbCurl','diamondPushup'],
+},
+};
+
+// ─── EXERCICES FULL BODY ─────────────────────────────────
+const FULLBODY: Record<string, string[][]> = {
+A: [['bench','pushup'],['pullup','australianRow'],['squat','bwSquat'],['dbOhp'],['dbCurl'],['plank']],
+B: [['dbBench'],['row','latpull'],['lunge','rdl'],['lateral'],['hammercurl'],['crunch','legRaise']],
+C: [['incline','pushup'],['pullup','dbRow'],['bwSquat','gluteBridge'],['rearDelt'],['curl'],['russianTwist']],
+};
+
+function getAvail(equipment: string[], environment: string): string[] {
 return Object.entries(EX).filter(([, ex]) => {
 if (environment === 'outdoor') return ex.bodyweight || ex.req.includes('pullupbar');
 if (ex.req.length === 0) return true;
@@ -8,50 +93,42 @@ return ex.req.every(r => equipment.includes(r));
 }).map(([id]) => id);
 }
 
+function pickBest(list: string[], avail: string[]): string[] {
+return list.filter(id => avail.includes(id));
+}
+
+function buildSession(muscleGroups: string[], goal: string, avail: string[]): string[] {
+const prog = PROGRAMS[goal] || PROGRAMS.mass;
+const exos: string[] = [];
+
+// Si c'est un Full Body
+if (muscleGroups.includes('arms') || muscleGroups.length >= 3) {
+const key = muscleGroups.includes('chest') ? 'A' : muscleGroups.includes('shoulders') ? 'B' : 'C';
+FULLBODY[key].forEach(opts => {
+const found = opts.find(id => avail.includes(id));
+if (found) exos.push(found);
+});
+return exos;
+}
+
+muscleGroups.forEach(group => {
+const list = prog[group] || [];
+const available = pickBest(list, avail);
+exos.push(...available);
+});
+
+return exos;
+}
+
 export function buildCycle(goal: string, frequency: number, gender: string, equipment: string[], environment: string) {
 const avail = getAvail(equipment, environment);
-const has = (id: string) => avail.includes(id);
-const pick = (...opts: string[]) => opts.find(has) || null;
-const pickAll = (...opts: string[]) => opts.filter(has);
+const baseCycle = CYCLES[goal] || CYCLES.mass;
 
-const chest = pickAll('bench','dbBench','incline','pushup').slice(0,3);
-const back = pickAll('deadlift','pullup','row','dbRow','latpull','australianRow').slice(0,4);
-const shoulders = [...pickAll('ohp','dbOhp').slice(0,1), ...pickAll('lateral').slice(0,1), ...pickAll('rearDelt','facePull').slice(0,1)].filter(Boolean);
-const biceps = pickAll('curl','dbCurl','hammercurl').slice(0,2);
-const triceps = pickAll('skullcrush','triceppush','diamondPushup').slice(0,2);
-const legs = pickAll('squat','gobletSquat','bwSquat','rdl','lunge','bwCalf').slice(0,5);
-const glutes = pickAll('hipThrust','bwHipThrust','sumoSquat','gluteBridge').slice(0,4);
-const abs = [pick('plank'), pick('crunch'), pick('legRaise'), pick('russianTwist')].filter(Boolean) as string[];
-const fullBody = [pick('squat','gobletSquat','bwSquat'), pick('bench','dbBench','pushup'), pick('pullup','australianRow'), pick('dbOhp','ohp','lateral'), pick('dbCurl','hammercurl'), pick('plank','crunch')].filter(Boolean) as string[];
-
-const R = { name:'Repos', icon:'😴', exos:[] as string[], isRest:true, note:'Le muscle grandit pendant le repos.' };
-const RA = { name:'Repos actif', icon:'🧘', exos:[] as string[], isRest:true, note:'Mobilité, étirements, marche.' };
-
-const eff = gender === 'teen' ? 'teen' : (goal || 'mass');
-
-const T: Record<string, Record<number, any[]>> = {
-mass: {
-3: [{name:'Pecs · Triceps',icon:'🏋️',exos:[...chest,...triceps],isRest:false}, R, {name:'Dos · Biceps',icon:'🌊',exos:[...back,...biceps],isRest:false}, R, {name:'Jambes · Épaules · Abdos',icon:'🦵',exos:[...legs.slice(0,3),...shoulders,...abs.slice(0,2)],isRest:false}, R, R],
-4: [{name:'Pecs · Triceps',icon:'🏋️',exos:[...chest,...triceps],isRest:false}, {name:'Dos · Biceps',icon:'🌊',exos:[...back,...biceps],isRest:false}, {name:'Jambes',icon:'🦵',exos:legs,isRest:false}, R, {name:'Épaules · Abdos',icon:'🔥',exos:[...shoulders,...abs],isRest:false}, R, R],
-5: [{name:'Pecs · Triceps',icon:'🏋️',exos:[...chest,...triceps],isRest:false}, {name:'Dos · Biceps',icon:'🌊',exos:[...back,...biceps],isRest:false}, {name:'Jambes',icon:'🦵',exos:legs,isRest:false}, R, {name:'Épaules · Abdos',icon:'🔥',exos:[...shoulders,...abs],isRest:false}, R],
-6: [{name:'Pecs · Triceps',icon:'🏋️',exos:[...chest,...triceps],isRest:false}, {name:'Dos · Biceps',icon:'🌊',exos:[...back,...biceps],isRest:false}, {name:'Jambes',icon:'🦵',exos:legs,isRest:false}, {name:'Épaules · Abdos',icon:'🔥',exos:[...shoulders,...abs],isRest:false}, R, R],
-},
-glute: {
-3: [{name:'Fessiers A',icon:'🍑',exos:glutes,isRest:false}, R, {name:'Haut du corps',icon:'💪',exos:[pick('dbBench','pushup'),...back.slice(0,2)].filter(Boolean) as string[],isRest:false}, R, {name:'Fessiers B · Abdos',icon:'🍑',exos:[...legs.slice(2,4),...glutes.slice(2),...abs],isRest:false}, R, R],
-4: [{name:'Fessiers A',icon:'🍑',exos:glutes,isRest:false}, {name:'Haut A',icon:'💪',exos:[pick('dbBench','pushup'),...back.slice(0,2)].filter(Boolean) as string[],isRest:false}, R, {name:'Fessiers B · Abdos',icon:'🍑',exos:[...legs.slice(1,3),...glutes.slice(2),...abs],isRest:false}, {name:'Haut B',icon:'🌊',exos:[...back.slice(2),...biceps],isRest:false}, R],
-},
-fit: {
-3: [{name:'Full Body A',icon:'💪',exos:fullBody,isRest:false}, R, {name:'Full Body B',icon:'⚡',exos:[...back.slice(0,2),...legs.slice(0,2),...shoulders.slice(0,1)].filter(Boolean) as string[],isRest:false}, R, {name:'Full Body C',icon:'🔥',exos:[...chest.slice(0,2),...legs.slice(2,4),...abs].filter(Boolean) as string[],isRest:false}, R, R],
-4: [{name:'Haut du corps',icon:'🏋️',exos:[...chest.slice(0,2),...back.slice(0,2),...shoulders].filter(Boolean) as string[],isRest:false}, {name:'Bas du corps',icon:'🦵',exos:legs,isRest:false}, RA, {name:'Haut B · Abdos',icon:'🌊',exos:[...back.slice(2),...biceps,...triceps.slice(0,1),...abs].filter(Boolean) as string[],isRest:false}, R],
-},
-teen: {
-3: [{name:'Full Body A',icon:'💪',exos:[pick('bwSquat','gobletSquat'),pick('pushup'),pick('australianRow','pullup'),pick('lateral','dbOhp'),pick('hammercurl','dbCurl'),pick('plank')].filter(Boolean) as string[],isRest:false}, R, {name:'Full Body B',icon:'⚡',exos:[pick('lunge','bwSquat'),pick('pushup'),pick('australianRow'),pick('dbOhp'),pick('dbCurl'),pick('crunch')].filter(Boolean) as string[],isRest:false}, R, {name:'Full Body C',icon:'🔥',exos:[pick('bwHipThrust','gluteBridge'),pick('pushup'),pick('australianRow'),pick('lateral'),pick('hammercurl'),pick('plank')].filter(Boolean) as string[],isRest:false}, R, R],
-},
-};
-
-const goalT = T[eff] || T.fit;
-const freqT = goalT[frequency] || goalT[4] || goalT[3];
-return freqT.filter((s: any) => s.isRest || (s.exos && s.exos.length > 0));
+return baseCycle.map(day => {
+if (day.isRest) return day;
+const exos = buildSession(day.muscleGroups || [], goal, avail);
+return { ...day, exos };
+});
 }
 
 export function calc1RM(w: number, r: number): number {
@@ -124,4 +201,3 @@ volume_10t: totalVol >= 10000,
 };
 return ACHIEVEMENTS.filter(a => checks[a.id]).map(a => a.id);
 }
-
